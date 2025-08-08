@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Список дел</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#4CAF50">
+<link rel="icon" href="icon-192.png">
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        background: #f2f2f2;
+        display: flex;
+        justify-content: center;
+        padding: 30px;
+        color: #222;
+    }
+    @media (prefers-color-scheme: dark) {
+        body { background: #121212; color: #fff; }
+        .container { background: #1e1e1e; }
+        input { background: #333; color: #fff; border: 1px solid #555; }
+    }
+    .container {
+        background: white;
+        padding: 20px;
+        border-radius: 8px;
+        width: 350px;
+        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+    h2 {
+        margin-top: 0;
+        text-align: center;
+    }
+    input {
+        width: 75%;
+        padding: 8px;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+    }
+    button {
+        padding: 8px 12px;
+        margin-left: 5px;
+        border: none;
+        background: #4CAF50;
+        color: white;
+        border-radius: 4px;
+        cursor: pointer;
+    }
+    button:hover {
+        background: #45a049;
+    }
+    ul {
+        list-style: none;
+        padding: 0;
+        margin-top: 20px;
+    }
+    li {
+        padding: 8px;
+        border-bottom: 1px solid #ddd;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    li.done {
+        text-decoration: line-through;
+        color: gray;
+    }
+    .delete {
+        background: red;
+        color: white;
+        padding: 4px 8px;
+        border-radius: 4px;
+        cursor: pointer;
+    }
+</style>
+</head>
+<body>
+<div class="container">
+    <h2>Список дел</h2>
+    <input type="text" id="taskInput" placeholder="Новая задача...">
+    <button onclick="addTask()">Добавить</button>
+    <ul id="taskList"></ul>
+</div>
+
+<script>
+    const taskInput = document.getElementById("taskInput");
+    const taskList = document.getElementById("taskList");
+
+    let tasks = JSON.parse(localStorage.getItem("tasks")) || [];
+    renderTasks();
+
+    function addTask() {
+        const text = taskInput.value.trim();
+        if (text === "") return;
+        tasks.push({ text, done: false });
+        taskInput.value = "";
+        saveTasks();
+        renderTasks();
+    }
+
+    function toggleTask(index) {
+        tasks[index].done = !tasks[index].done;
+        saveTasks();
+        renderTasks();
+    }
+
+    function deleteTask(index) {
+        tasks.splice(index, 1);
+        saveTasks();
+        renderTasks();
+    }
+
+    function saveTasks() {
+        localStorage.setItem("tasks", JSON.stringify(tasks));
+    }
+
+    function renderTasks() {
+        taskList.innerHTML = "";
+        tasks.forEach((task, i) => {
+            const li = document.createElement("li");
+            li.className = task.done ? "done" : "";
+            li.innerHTML = `
+                <span onclick="toggleTask(${i})">${task.text}</span>
+                <span class="delete" onclick="deleteTask(${i})">×</span>
+            `;
+            taskList.appendChild(li);
+        });
+    }
+
+    if ("serviceWorker" in navigator) {
+        navigator.serviceWorker.register("service-worker.js");
+    }
+</script>
+</body>
+</html>
